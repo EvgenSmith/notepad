@@ -1,34 +1,61 @@
+# encoding: utf-8
+# программа "Блокнот"
+
+
+# базовый класс "Запись"
+# задает основные методы и свойства, присущие всем разновидностям Записи
 class Post
 
+  # набор известных детей класса Запись в виде массива классов
+  def self.post_types
+    [Memo, Task, Link]
+  end
+  # XXX/ строго говоря этот метод self.types нехорош — родительский класс в идеале в коде
+  # не должен никак зависеть от своих конкретных детей. Мы его использовали для простоты
+  # (он адекватен поставленной задаче).
+
+  # динамическое создание объекта нужного класса из набора возможных детей
+  def self.create(type_index)
+    return post_types[type_index].new
+  end
+
+
+  # конструктор
   def initialize
-    @created_at = Time.now
-    @text = nil
+    @created_at = Time.now # дата создания записи
+    @text = nil # массив строк записи — пока пустой
   end
 
+  # вызываться в программе когда нужно считать ввод пользователя и записать его в нужные поля объекта
   def read_from_console
-    # todo
+    # todo: должен реализовываться детьми, которые знают как именно считывать свои данные из консоли
   end
 
+  # возвращает состояние объекта в виде массива строк, готовых к записи в файл
   def to_strings
-    # todo
+    # todo: должен реализовываться детьми, которые знают как именно хранить себя в файле
   end
 
+  # записывает текущее состояние объекта в файл
   def save
-    file = File.new(file_path, "w:UTF-8")
+    file = File.new(file_path, "w:UTF-8") # открываем файл на запись
 
-    for item in to_strings do
+    for item in to_strings do # идем по массиву строк, полученных из метода to_strings
       file.puts(item)
     end
 
-    file.close
+    file.close # закрываем
   end
 
- def file_path
-  current_path = File.dirname(__FILE__)
+  # метод, возвращающий путь к файлу, куда записывать этот объект
+  def file_path
+    # сохраним в переменной current_path место, откуда запустили программу
+    current_path = File.dirname(__FILE__)
 
-  file_name = @created_at.strftime("#{self.class.name}_%Y-%m-%d_%H-%M-%S.txt")
+    # получим имя файла из даты создания поста метод strftime формирует строку типа "2014-12-27_12-08-31.txt"
+    file_name = @created_at.strftime("#{self.class.name}_%Y-%m-%d_%H-%M-%S.txt")
+    # мы добавили в название файла даже секунды (%S) — это обеспечит уникальность имени файла
 
-  return current_path + "/" + file_name
- end
-
+    return current_path + "/" + file_name
+  end
 end
